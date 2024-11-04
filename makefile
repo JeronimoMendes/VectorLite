@@ -4,7 +4,7 @@ BINARY_NAME=vectorlite
 all: build
 
 build:
-	go build -o bin/$(BINARY_NAME) ./cmd/vectorlite
+	go build -ldflags=-w -o bin/$(BINARY_NAME) ./cmd/vectorlite
 
 run: build
 	./bin/vectorlite
