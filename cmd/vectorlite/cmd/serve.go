@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"VectorLite/internal/api"
 
 	"github.com/spf13/cobra"
 )
@@ -14,7 +14,8 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Run a VectorLite instance",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
+		port, _ := cmd.Flags().GetInt("port")
+		api.Serve(port)
 	},
 }
 
