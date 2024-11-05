@@ -11,21 +11,21 @@ import (
 )
 
 type EntryRequest struct {
-	Vector   []float64         `json:"vector" binding:"required"`
-	Metadata map[string]string `json:"metadata" binding:"required"`
+	Vectors   [][]float64         `json:"vectors" binding:"required"`
+	Metadatas []map[string]string `json:"metadatas" binding:"required"`
 }
 
 func AddEntries(c *gin.Context) {
-	var rb []EntryRequest
+	var rb EntryRequest
 	if err := c.ShouldBindJSON(&rb); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	log.Printf("Adding %d entries\n", len(rb))
-	for _, entry := range rb {
-		vector := vector.NewVector(entry.Vector...)
-		engine.AddEntry(state.State.Database, *vector, entry.Metadata)
+	log.Printf("Adding %d entries\n", len(rb.Vectors))
+	for i, vec := range rb.Vectors {
+		vector := vector.NewVector(vec...)
+		engine.AddEntry(state.State.Database, *vector, rb.Metadatas[i])
 	}
 }
 
