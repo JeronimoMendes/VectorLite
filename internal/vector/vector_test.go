@@ -2,6 +2,7 @@ package vector_test
 
 import (
 	"VectorLite/internal/vector"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,4 +27,61 @@ func TestNewVectorSingleValues(t *testing.T) {
 	assert.NotNil(t, v, "Vector should not be nil")
 	assert.Equal(t, 1, len(v.Values), "Vector should have one value")
 	assert.Equal(t, 10.5, v.Values[0], "Vector value should match the single input value")
+}
+
+func TestMagnitude(t *testing.T) {
+	tests := []struct {
+		vector vector.Vector
+		want   float64
+	}{
+		{vector.Vector{Values: []float64{3, 4}}, 5},
+		{vector.Vector{Values: []float64{1, 2, 2}}, 3},
+		{vector.Vector{Values: []float64{0, 0, 0}}, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := tt.vector.Magnitude(); math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("Magnitude() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDotProduct(t *testing.T) {
+	tests := []struct {
+		v1, v2 vector.Vector
+		want   float64
+	}{
+		{vector.Vector{Values: []float64{1, 3, -5}}, vector.Vector{Values: []float64{4, -2, -1}}, 3},
+		{vector.Vector{Values: []float64{1, 2, 3}}, vector.Vector{Values: []float64{4, 5, 6}}, 32},
+		{vector.Vector{Values: []float64{1, 0, 0}}, vector.Vector{Values: []float64{0, 1, 0}}, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := tt.v1.Dot_product(&tt.v2); math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("Dot_product() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCosineSimilarity(t *testing.T) {
+	tests := []struct {
+		v1, v2 vector.Vector
+		want   float64
+	}{
+		{vector.Vector{Values: []float64{1, 0}}, vector.Vector{Values: []float64{0, 1}}, 0},
+		{vector.Vector{Values: []float64{1, 0}}, vector.Vector{Values: []float64{1, 0}}, 1},
+		{vector.Vector{Values: []float64{1, 2, 3}}, vector.Vector{Values: []float64{4, 5, 6}}, 0.974631846},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := tt.v1.Cosine_similarity(&tt.v2); math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("Cosine_similarity() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
