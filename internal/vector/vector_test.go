@@ -85,3 +85,24 @@ func TestCosineSimilarity(t *testing.T) {
 		})
 	}
 }
+
+func TestEuclideanDistance(t *testing.T) {
+	tests := []struct {
+		v1, v2 vector.Vector
+		want   float64
+	}{
+		{vector.Vector{Values: []float64{0, 0}}, vector.Vector{Values: []float64{0, 0}}, 0},
+		{vector.Vector{Values: []float64{1, 2}}, vector.Vector{Values: []float64{4, 6}}, 5},
+		{vector.Vector{Values: []float64{1, 0, 0}}, vector.Vector{Values: []float64{0, 1, 0}}, math.Sqrt(2)},
+		{vector.Vector{Values: []float64{1, 2, 3}}, vector.Vector{Values: []float64{1, 2, 3}}, 0},
+		{vector.Vector{Values: []float64{-1, -2, -3}}, vector.Vector{Values: []float64{-4, -5, -6}}, math.Sqrt(27)},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := tt.v1.Euclidean_distance(&tt.v2); math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("Euclidean_distance() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -30,3 +30,12 @@ func (v1 *Vector) Dot_product(v2 *Vector) float64 {
 func (v1 *Vector) Cosine_similarity(v2 *Vector) float64 {
 	return v1.Dot_product(v2) / (v1.Magnitude() * v2.Magnitude())
 }
+
+func (v1 *Vector) Euclidean_distance(v2 *Vector) float64 {
+	x := 0.0
+	for i, value1 := range v1.Values {
+		value2 := v2.Values[i]
+		x += math.Pow(value1-value2, 2)
+	}
+	return math.Sqrt(x)
+}
