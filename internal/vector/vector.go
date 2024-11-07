@@ -50,3 +50,16 @@ func (v1 *Vector) Euclidean_distance(v2 *Vector) float64 {
 	}
 	return math.Sqrt(x)
 }
+
+func (v1 *Vector) Distance_score(v2 *Vector, metric string) float64 {
+	score := math.Inf(1)
+	switch metric {
+	case "cosine":
+		score = (1 + v1.Cosine_similarity(v2)) / 2
+	case "dot_product":
+		score = (1 + v1.Normalize().Cosine_similarity(v2.Normalize())) / 2
+	case "euclidean":
+		score = v1.Euclidean_distance(v2)
+	}
+	return score
+}

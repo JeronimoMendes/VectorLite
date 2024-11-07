@@ -134,3 +134,29 @@ func TestNormalize(t *testing.T) {
 		})
 	}
 }
+
+func TestDistanceScore(t *testing.T) {
+	v1 := vector.Vector{Values: []float64{1, 0}}
+	v2 := vector.Vector{Values: []float64{0, 1}}
+
+	tests := []struct {
+		v1, v2 vector.Vector
+		metric string
+		want   float64
+	}{
+		{v1, v2, "cosine", 0.5},
+		{v1, v1, "cosine", 1},
+		{v1, v1, "dot_product", 1},
+		{v1, v2, "dot_product", 0.5},
+		{v1, v2, "euclidean", math.Sqrt(2)},
+		{v1, v1, "euclidean", 0},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			if got := tt.v1.Distance_score(&tt.v2, tt.metric); math.Abs(got-tt.want) > 1e-9 {
+				t.Errorf("Distance_score(%v, %v, %q) = %v, want %v", tt.v1.Values, tt.v2.Values, tt.metric, got, tt.want)
+			}
+		})
+	}
+}
