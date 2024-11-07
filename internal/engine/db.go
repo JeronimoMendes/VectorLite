@@ -10,7 +10,7 @@ func NewDatabase() *Database {
 	}
 }
 
-func AddEntry(database *Database, vector vector.Vector, metadata map[string]string) {
+func (database *Database) AddEntry(vector vector.Vector, metadata map[string]string) {
 	newEntry := Entry{
 		Vector:   vector,
 		Metadata: metadata,
@@ -19,6 +19,6 @@ func AddEntry(database *Database, vector vector.Vector, metadata map[string]stri
 	database.entries = append(database.entries, newEntry)
 }
 
-func ListEntries(database *Database) []Entry {
+func (database *Database) ListEntries() []Entry {
 	return database.entries
 }

@@ -13,7 +13,7 @@ func TestNewDB(t *testing.T) {
 	db := engine.NewDatabase()
 
 	assert.NotNil(t, db)
-	assert.Equal(t, 0, len(engine.ListEntries(db)), "New database should have no entries")
+	assert.Equal(t, 0, len(db.ListEntries()), "New database should have no entries")
 }
 
 func TestAddEntry(t *testing.T) {
@@ -21,10 +21,10 @@ func TestAddEntry(t *testing.T) {
 	vec := vector.NewVector(1.5, 2.2)
 	metadata := map[string]string{"text": "hello world"}
 
-	engine.AddEntry(db, *vec, metadata)
+	db.AddEntry(*vec, metadata)
 
-	assert.Equal(t, 1, len(engine.ListEntries(db)), "Database should have one entry")
-	entry := engine.ListEntries(db)[0]
+	assert.Equal(t, 1, len(db.ListEntries()), "Database should have one entry")
+	entry := db.ListEntries()[0]
 	assert.Equal(t, *vec, entry.Vector, "Vector should match the one added")
 	assert.Equal(t, metadata, entry.Metadata, "Metadata should match the one added")
 	assert.Equal(t, 1, entry.Id, "Id should be set correctly")
@@ -32,7 +32,7 @@ func TestAddEntry(t *testing.T) {
 
 func TestListEntriesEmpty(t *testing.T) {
 	db := engine.NewDatabase()
-	entries := engine.ListEntries(db)
+	entries := db.ListEntries()
 
 	assert.Equal(t, 0, len(entries), "ListEntries should return empty list for new database")
 }
@@ -44,10 +44,10 @@ func TestListEntriesWithEntries(t *testing.T) {
 	metadata1 := map[string]string{"text": "entry1"}
 	metadata2 := map[string]string{"text": "entry2"}
 
-	engine.AddEntry(db, *vec1, metadata1)
-	engine.AddEntry(db, *vec2, metadata2)
+	db.AddEntry(*vec1, metadata1)
+	db.AddEntry(*vec2, metadata2)
 
-	entries := engine.ListEntries(db)
+	entries := db.ListEntries()
 
 	assert.Equal(t, 2, len(entries), "ListEntries should return all added entries")
 	assert.Equal(t, *vec1, entries[0].Vector, "First entry vector should match")

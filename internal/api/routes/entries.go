@@ -1,7 +1,6 @@
 package api
 
 import (
-	"VectorLite/internal/engine"
 	"VectorLite/internal/state"
 	"VectorLite/internal/vector"
 	"log"
@@ -25,12 +24,12 @@ func AddEntries(c *gin.Context) {
 	log.Printf("Adding %d entries\n", len(rb.Vectors))
 	for i, vec := range rb.Vectors {
 		vector := vector.NewVector(vec...)
-		engine.AddEntry(state.State.Database, *vector, rb.Metadatas[i])
+		state.State.Database.AddEntry(*vector, rb.Metadatas[i])
 	}
 }
 
 func ListEntries(c *gin.Context) {
-	entries := engine.ListEntries(state.State.Database)
+	entries := state.State.Database.ListEntries()
 	log.Println("Listing entries")
 
 	serializedEntries := make([]gin.H, len(entries))
