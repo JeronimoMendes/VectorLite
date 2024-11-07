@@ -18,6 +18,17 @@ func (vector *Vector) Magnitude() float64 {
 	return math.Sqrt(x)
 }
 
+func (v1 *Vector) Normalize() *Vector {
+	magnitude := v1.Magnitude()
+	new_values := []float64{}
+	for _, value := range v1.Values {
+		new_value := value / magnitude
+		new_values = append(new_values, new_value)
+	}
+	new_vector := Vector{Values: new_values}
+	return &new_vector
+}
+
 func (v1 *Vector) Dot_product(v2 *Vector) float64 {
 	dot_product := 0.0
 	for i, value1 := range v1.Values {

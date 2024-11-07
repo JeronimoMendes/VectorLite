@@ -106,3 +106,31 @@ func TestEuclideanDistance(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalize(t *testing.T) {
+	tests := []struct {
+		input    vector.Vector
+		expected vector.Vector
+	}{
+		{vector.Vector{Values: []float64{3, 4}}, vector.Vector{Values: []float64{0.6, 0.8}}},
+		{vector.Vector{Values: []float64{5, 0}}, vector.Vector{Values: []float64{1, 0}}},
+		{vector.Vector{Values: []float64{0, 0}}, vector.Vector{Values: []float64{0, 0}}},
+		{vector.Vector{Values: []float64{-2, -2}}, vector.Vector{Values: []float64{-math.Sqrt(2) / 2, -math.Sqrt(2) / 2}}},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			normalized_vector := tt.input.Normalize()
+			for i, v := range normalized_vector.Values {
+				if math.Abs(v-tt.expected.Values[i]) > 1e-9 {
+					t.Errorf("Normalize() = %v, want %v", tt.input.Values, tt.expected.Values)
+				}
+			}
+
+			// Check if normalized vector's magnitude is 1 (with tolerance for floating point arithmetic)
+			if mag := normalized_vector.Magnitude(); math.Abs(mag-1) > 1e-9 && mag != 0 { // ignore the zero vector
+				t.Errorf("Normalized vector's magnitude is %v, want 1", mag)
+			}
+		})
+	}
+}
