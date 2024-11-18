@@ -145,8 +145,8 @@ func TestDistanceScore(t *testing.T) {
 		want   float64
 	}{
 		{v1, v2, "cosine", 0.5},
-		{v1, v1, "cosine", 1},
-		{v1, v1, "dot_product", 1},
+		{v1, v1, "cosine", 0},
+		{v1, v1, "dot_product", 0},
 		{v1, v2, "dot_product", 0.5},
 		{v1, v2, "euclidean", math.Sqrt(2)},
 		{v1, v1, "euclidean", 0},

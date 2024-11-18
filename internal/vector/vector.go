@@ -55,9 +55,9 @@ func (v1 *Vector) Distance_score(v2 *Vector, metric string) float64 {
 	score := math.Inf(1)
 	switch metric {
 	case "cosine":
-		score = (1 + v1.Cosine_similarity(v2)) / 2
+		score = 1 - (1+v1.Cosine_similarity(v2))/2
 	case "dot_product":
-		score = (1 + v1.Normalize().Cosine_similarity(v2.Normalize())) / 2
+		score = 1 - (1+v1.Normalize().Cosine_similarity(v2.Normalize()))/2
 	case "euclidean":
 		score = v1.Euclidean_distance(v2)
 	}
