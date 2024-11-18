@@ -11,3 +11,8 @@ type Entry struct {
 	Metadata map[string]string
 	Id       int
 }
+
+type entryScore struct {
+	Entry Entry
+	Score float64
+}

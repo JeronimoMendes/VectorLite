@@ -55,3 +55,31 @@ func TestListEntriesWithEntries(t *testing.T) {
 	assert.Equal(t, *vec2, entries[1].Vector, "Second entry vector should match")
 	assert.Equal(t, metadata2, entries[1].Metadata, "Second entry metadata should match")
 }
+
+func TestQuery(t *testing.T) {
+	db := engine.NewDatabase()
+	db.AddEntry(*vector.NewVector(1, 2, 3), map[string]string{"text": "entry1"})
+	db.AddEntry(*vector.NewVector(4, 5, 6), map[string]string{"text": "entry2"})
+	db.AddEntry(*vector.NewVector(7, 8, 9), map[string]string{"text": "entry3"})
+
+	vectorA := vector.NewVector(2, 3, 4)
+
+	// Test case 1: Basic functionality
+	result := db.Query(vectorA, 2, "euclidean")
+	assert.Equal(t, 2, len(result))
+	// Additional assertions can be made based on the expected vector entries
+
+	// Test case 2: Requesting more neighbors than available
+	result = db.Query(vectorA, 5, "euclidean")
+	assert.Equal(t, 3, len(result))
+
+	// Test case 3: Using a different metric
+	// Assuming implementation supports "manhattan" or other metrics
+	result = db.Query(vectorA, 2, "manhattan")
+	assert.Equal(t, 2, len(result))
+
+	// Test case 5: Empty database
+	emptyDatabase := engine.NewDatabase()
+	result = emptyDatabase.Query(vectorA, 2, "euclidean")
+	assert.Equal(t, 0, len(result))
+}
