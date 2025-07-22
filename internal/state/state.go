@@ -1,6 +1,7 @@
 package state
 
 import (
+	"VectorLite/internal/algorithms/bruteforce"
 	"VectorLite/internal/engine"
 	"sync"
 )
@@ -11,5 +12,5 @@ type GlobalState struct {
 }
 
 var State = GlobalState{
-	Database: engine.NewDatabase(),
+	Database: engine.NewDatabase(bruteforce.New()),
 }

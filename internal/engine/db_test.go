@@ -3,6 +3,7 @@ package engine_test
 import (
 	"testing"
 
+	"VectorLite/internal/algorithms/bruteforce"
 	"VectorLite/internal/engine"
 	"VectorLite/internal/vector"
 
@@ -10,14 +11,16 @@ import (
 )
 
 func TestNewDB(t *testing.T) {
-	db := engine.NewDatabase()
+	algorithm := bruteforce.New()
+	db := engine.NewDatabase(algorithm)
 
 	assert.NotNil(t, db)
 	assert.Equal(t, 0, len(db.ListEntries()), "New database should have no entries")
 }
 
 func TestAddEntry(t *testing.T) {
-	db := engine.NewDatabase()
+	algorithm := bruteforce.New()
+	db := engine.NewDatabase(algorithm)
 	vec := vector.NewVector(1.5, 2.2)
 	metadata := map[string]string{"text": "hello world"}
 
@@ -31,14 +34,16 @@ func TestAddEntry(t *testing.T) {
 }
 
 func TestListEntriesEmpty(t *testing.T) {
-	db := engine.NewDatabase()
+	algorithm := bruteforce.New()
+	db := engine.NewDatabase(algorithm)
 	entries := db.ListEntries()
 
 	assert.Equal(t, 0, len(entries), "ListEntries should return empty list for new database")
 }
 
 func TestListEntriesWithEntries(t *testing.T) {
-	db := engine.NewDatabase()
+	algorithm := bruteforce.New()
+	db := engine.NewDatabase(algorithm)
 	vec1 := vector.NewVector(1.5, 2.2)
 	vec2 := vector.NewVector(3.1, 4.4)
 	metadata1 := map[string]string{"text": "entry1"}
@@ -57,7 +62,8 @@ func TestListEntriesWithEntries(t *testing.T) {
 }
 
 func TestQuery(t *testing.T) {
-	db := engine.NewDatabase()
+	algorithm := bruteforce.New()
+	db := engine.NewDatabase(algorithm)
 	db.AddEntry(*vector.NewVector(1, 2, 3), map[string]string{"text": "entry1"})
 	db.AddEntry(*vector.NewVector(4, 5, 6), map[string]string{"text": "entry2"})
 	db.AddEntry(*vector.NewVector(7, 8, 9), map[string]string{"text": "entry3"})
@@ -79,7 +85,8 @@ func TestQuery(t *testing.T) {
 	assert.Equal(t, 2, len(result))
 
 	// Test case 5: Empty database
-	emptyDatabase := engine.NewDatabase()
+	emptyAlgorithm := bruteforce.New()
+	emptyDatabase := engine.NewDatabase(emptyAlgorithm)
 	result = emptyDatabase.Query(vectorA, 2, "euclidean")
 	assert.Equal(t, 0, len(result))
 }

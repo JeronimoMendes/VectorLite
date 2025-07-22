@@ -1,19 +1,8 @@
 package engine
 
-import "VectorLite/internal/vector"
+import "VectorLite/internal/algorithms"
 
 type Database struct {
-	entries []Entry
+	algorithm algorithms.SearchAlgorithm
 }
 
-type Entry struct {
-	Vector   vector.Vector
-	Metadata map[string]string
-	Id       int
-	Friends  []*Entry
-}
-
-type entryScore struct {
-	Entry Entry
-	Score float64
-}
