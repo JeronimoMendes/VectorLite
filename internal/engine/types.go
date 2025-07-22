@@ -10,6 +10,7 @@ type Entry struct {
 	Vector   vector.Vector
 	Metadata map[string]string
 	Id       int
+	Friends  []*Entry
 }
 
 type entryScore struct {

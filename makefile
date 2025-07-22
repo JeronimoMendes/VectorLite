@@ -6,8 +6,11 @@ all: build
 build:
 	go build -ldflags=-w -o bin/$(BINARY_NAME) ./cmd/vectorlite
 
+debug:
+	dlv debug ./cmd/vectorlite/main.go -- serve
+
 test:
-	go test ./... -v
+	gotestsum --format testname ./...
 
 run: build
 	./bin/vectorlite

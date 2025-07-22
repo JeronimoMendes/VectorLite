@@ -57,3 +57,24 @@ func (database *Database) Query(query_vector *vector.Vector, k int, metric strin
 
 	return returnEntries
 }
+
+func (entry *Entry) connect(other *Entry) {
+	entry.Friends = append(entry.Friends, other)
+	other.Friends = append(other.Friends, entry)
+}
+
+func (entry *Entry) disconnect(other *Entry) {
+	for i, friend := range entry.Friends {
+		if friend == other {
+			entry.Friends = append(entry.Friends[:i], entry.Friends[i+1:]...)
+			break
+		}
+	}
+
+	for i, friend := range other.Friends {
+		if friend == entry {
+			other.Friends = append(other.Friends[:i], other.Friends[i+1:]...)
+			break
+		}
+	}
+}
