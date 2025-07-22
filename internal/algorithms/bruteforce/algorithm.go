@@ -8,7 +8,8 @@ import (
 )
 
 type Algorithm struct {
-	entries []algorithms.Entry
+	entries 	[]algorithms.Entry
+	idCounter 	int
 }
 
 type entryScore struct {
@@ -22,13 +23,8 @@ func New() *Algorithm {
 	}
 }
 
-func (a *Algorithm) AddEntry(vec vector.Vector, metadata map[string]string) {
-	newEntry := algorithms.Entry{
-		Vector:   vec,
-		Metadata: metadata,
-		Id:       len(a.entries) + 1,
-	}
-	a.entries = append(a.entries, newEntry)
+func (a *Algorithm) AddEntry(entry algorithms.Entry) {
+	a.entries = append(a.entries, entry)
 }
 
 func (a *Algorithm) ListEntries() []algorithms.Entry {

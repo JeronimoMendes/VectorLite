@@ -12,7 +12,13 @@ func NewDatabase(algorithm algorithms.SearchAlgorithm) *Database {
 }
 
 func (database *Database) AddEntry(vector vector.Vector, metadata map[string]string) {
-	database.algorithm.AddEntry(vector, metadata)
+	database.NumberEntries++
+	entry := algorithms.Entry{
+		Vector:   vector,
+		Metadata: metadata,
+		Id:       database.NumberEntries,
+	}
+	database.algorithm.AddEntry(entry)
 }
 
 func (database *Database) ListEntries() []algorithms.Entry {
