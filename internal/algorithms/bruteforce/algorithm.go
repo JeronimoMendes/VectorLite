@@ -32,6 +32,11 @@ func (a *Algorithm) ListEntries() []algorithms.Entry {
 }
 
 func (a *Algorithm) Query(queryVector *vector.Vector, k int, metric string) []algorithms.Entry {
+	// Handle edge case where k=0
+	if k <= 0 {
+		return []algorithms.Entry{}
+	}
+
 	// this is a brute force implementation of a knn algorithm
 	returnEntriesScores := []entryScore{}
 	highestScore := math.Inf(1) // this is actually the highest score in the return entries
@@ -52,7 +57,10 @@ func (a *Algorithm) Query(queryVector *vector.Vector, k int, metric string) []al
 				returnEntriesScores = returnEntriesScores[cut_from:]
 			}
 
-			highestScore = returnEntriesScores[0].Score
+			// Only update highestScore if we have entries
+			if len(returnEntriesScores) > 0 {
+				highestScore = returnEntriesScores[0].Score
+			}
 		}
 	}
 
