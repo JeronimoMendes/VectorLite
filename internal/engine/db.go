@@ -5,9 +5,10 @@ import (
 	"VectorLite/internal/vector"
 )
 
-func NewDatabase(algorithm algorithms.SearchAlgorithm) *Database {
+func NewDatabase(name string, algorithm algorithms.SearchAlgorithm) *Database {
 	return &Database{
-		algorithm: algorithm,
+		Name:      name,
+		Algorithm: algorithm,
 	}
 }
 
@@ -18,14 +19,14 @@ func (database *Database) AddEntry(vector vector.Vector, metadata map[string]str
 		Metadata: metadata,
 		Id:       database.NumberEntries,
 	}
-	database.algorithm.AddEntry(entry)
+	database.Algorithm.AddEntry(entry)
 }
 
 func (database *Database) ListEntries() []algorithms.Entry {
-	return database.algorithm.ListEntries()
+	return database.Algorithm.ListEntries()
 }
 
 func (database *Database) Query(queryVector *vector.Vector, k int, metric string) []algorithms.Entry {
-	return database.algorithm.Query(queryVector, k, metric)
+	return database.Algorithm.Query(queryVector, k, metric)
 }
 

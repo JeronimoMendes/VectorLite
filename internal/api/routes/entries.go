@@ -10,6 +10,7 @@ import (
 )
 
 type EntryRequest struct {
+	Database  string              `json:"database" binding:"required"`
 	Vectors   [][]float64         `json:"vectors" binding:"required"`
 	Metadatas []map[string]string `json:"metadatas" binding:"required"`
 }
@@ -21,22 +22,42 @@ func AddEntries(c *gin.Context) {
 		return
 	}
 
-	log.Printf("Adding %d entries\n", len(rb.Vectors))
+	database, err := state.State.DatabaseManager.GetDatabase(rb.Database)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	log.Printf("Adding %d entries to database %s\n", len(rb.Vectors), rb.Database)
 	for i, vec := range rb.Vectors {
 		vector := vector.NewVector(vec...)
-		state.State.Database.AddEntry(*vector, rb.Metadatas[i])
+		database.AddEntry(*vector, rb.Metadatas[i])
 	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "entries added successfully"})
 }
 
 func ListEntries(c *gin.Context) {
-	entries := state.State.Database.ListEntries()
-	log.Println("Listing entries")
+	databaseName := c.Query("database")
+	if databaseName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "database parameter is required"})
+		return
+	}
+
+	database, err := state.State.DatabaseManager.GetDatabase(databaseName)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	entries := database.ListEntries()
+	log.Printf("Listing entries from database %s\n", databaseName)
 
 	serializedEntries := make([]gin.H, len(entries))
 	for i, entry := range entries {
 		serializedEntries[i] = gin.H{
-			"vector":   entry.Vector.Values, // Assuming entry.Vector returns a slice of float64
-			"metadata": entry.Metadata,      // Assuming entry.Metadata returns a map[string]string
+			"vector":   entry.Vector.Values,
+			"metadata": entry.Metadata,
 			"id":       entry.Id,
 		}
 	}

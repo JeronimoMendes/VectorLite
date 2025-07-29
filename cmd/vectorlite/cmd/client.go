@@ -17,6 +17,7 @@ import (
 )
 
 var serverURL string
+var selectedDatabase string
 
 // clientCmd represents the client command
 var clientCmd = &cobra.Command{
@@ -41,7 +42,11 @@ func runInteractiveClient() {
 	scanner := bufio.NewScanner(os.Stdin)
 	
 	for {
-		fmt.Print("vectorlite> ")
+		prompt := "vectorlite"
+		if selectedDatabase != "" {
+			prompt += "[" + selectedDatabase + "]"
+		}
+		fmt.Print(prompt + "> ")
 		if !scanner.Scan() {
 			break
 		}
@@ -73,6 +78,12 @@ func handleCommand(input string) {
 		showHelp()
 	case "status":
 		checkServerStatus()
+	case "create-db":
+		handleCreateDatabase(parts[1:])
+	case "use-db":
+		handleUseDatabase(parts[1:])
+	case "list-dbs":
+		handleListDatabases()
 	case "add":
 		handleAddEntry(parts[1:])
 	case "query":
@@ -88,18 +99,24 @@ func handleCommand(input string) {
 
 func showHelp() {
 	fmt.Println("Available commands:")
-	fmt.Println("  help                    - Show this help message")
-	fmt.Println("  status                  - Check server connection")
-	fmt.Println("  add <vector> <metadata> - Add vector entry")
+	fmt.Println("  help                          - Show this help message")
+	fmt.Println("  status                        - Check server connection")
+	fmt.Println("  create-db <name> <algorithm>  - Create a new database")
+	fmt.Println("    Example: create-db mydb bruteforce")
+	fmt.Println("    Algorithms: bruteforce, hnsw")
+	fmt.Println("  use-db <name>                 - Select database to use")
+	fmt.Println("    Example: use-db mydb")
+	fmt.Println("  list-dbs                      - List all databases")
+	fmt.Println("  add <vector> <metadata>       - Add vector entry")
 	fmt.Println("    Example: add [1.0,2.0,3.0] name=test,type=example")
-	fmt.Println("  query <vector> <k> <metric> - Query similar vectors")
+	fmt.Println("  query <vector> <k> <metric>   - Query similar vectors")
 	fmt.Println("    Example: query [1.0,2.0,3.0] 5 cosine")
 	fmt.Println("    Metrics: cosine, dot_product, euclidean")
-	fmt.Println("  import <file>           - Import vectors from file")
+	fmt.Println("  import <file>                 - Import vectors from file")
 	fmt.Println("    Example: import vectors.csv")
 	fmt.Println("    Supported formats: CSV")
-	fmt.Println("  list                    - List all entries")
-	fmt.Println("  quit/exit               - Exit the client")
+	fmt.Println("  list                          - List all entries")
+	fmt.Println("  quit/exit                     - Exit the client")
 }
 
 func checkServerStatus() {
@@ -118,6 +135,11 @@ func checkServerStatus() {
 }
 
 func handleAddEntry(args []string) {
+	if selectedDatabase == "" {
+		fmt.Println("Error: No database selected. Use 'use-db <name>' to select a database first.")
+		return
+	}
+	
 	if len(args) < 2 {
 		fmt.Println("Usage: add <vector> <metadata>")
 		fmt.Println("Example: add [1.0,2.0,3.0] name=test,type=example")
@@ -142,6 +164,7 @@ func handleAddEntry(args []string) {
 	
 	// Create request
 	reqData := map[string]interface{}{
+		"database":  selectedDatabase,
 		"vectors":   [][]float64{vector},
 		"metadatas": []map[string]string{metadata},
 	}
@@ -156,6 +179,11 @@ func handleAddEntry(args []string) {
 }
 
 func handleQuery(args []string) {
+	if selectedDatabase == "" {
+		fmt.Println("Error: No database selected. Use 'use-db <name>' to select a database first.")
+		return
+	}
+	
 	if len(args) < 3 {
 		fmt.Println("Usage: query <vector> <k> <metric>")
 		fmt.Println("Example: query [1.0,2.0,3.0] 5 cosine")
@@ -186,9 +214,10 @@ func handleQuery(args []string) {
 	
 	// Create request
 	reqData := map[string]interface{}{
-		"vector": vector,
-		"k":      k,
-		"metric": metric,
+		"database": selectedDatabase,
+		"vector":   vector,
+		"k":        k,
+		"metric":   metric,
 	}
 	
 	resp, err := makePostRequestWithResponse("/query", reqData)
@@ -221,7 +250,13 @@ func handleQuery(args []string) {
 }
 
 func handleListEntries() {
-	resp, err := http.Get(serverURL + "/entries")
+	if selectedDatabase == "" {
+		fmt.Println("Error: No database selected. Use 'use-db <name>' to select a database first.")
+		return
+	}
+	
+	url := fmt.Sprintf("%s/entries?database=%s", serverURL, selectedDatabase)
+	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Error listing entries: %v\n", err)
 		return
@@ -310,7 +345,7 @@ func makePostRequestWithResponse(endpoint string, data interface{}) ([]byte, err
 		return nil, err
 	}
 	
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("server error: %d - %s", resp.StatusCode, string(body))
 	}
 	
@@ -318,6 +353,11 @@ func makePostRequestWithResponse(endpoint string, data interface{}) ([]byte, err
 }
 
 func handleImport(args []string) {
+	if selectedDatabase == "" {
+		fmt.Println("Error: No database selected. Use 'use-db <name>' to select a database first.")
+		return
+	}
+	
 	if len(args) < 1 {
 		fmt.Println("Usage: import <file>")
 		fmt.Println("Example: import vectors.csv")
@@ -447,6 +487,7 @@ func importCSV(filename string) error {
 		batchMetadatas := metadatas[i:end]
 		
 		reqData := map[string]interface{}{
+			"database":  selectedDatabase,
 			"vectors":   batchVectors,
 			"metadatas": batchMetadatas,
 		}
@@ -504,4 +545,83 @@ func parseCSVRecord(record []string) ([]float64, map[string]string, error) {
 	}
 	
 	return vector, metadata, nil
+}
+
+func handleCreateDatabase(args []string) {
+	if len(args) < 2 {
+		fmt.Println("Usage: create-db <name> <algorithm>")
+		fmt.Println("Example: create-db mydb bruteforce")
+		fmt.Println("Algorithms: bruteforce, hnsw")
+		return
+	}
+	
+	name := args[0]
+	algorithm := args[1]
+	
+	if algorithm != "bruteforce" && algorithm != "hnsw" {
+		fmt.Printf("Invalid algorithm: %s. Use: bruteforce or hnsw\n", algorithm)
+		return
+	}
+	
+	reqData := map[string]interface{}{
+		"name":      name,
+		"algorithm": algorithm,
+	}
+	
+	err := makePostRequest("/databases", reqData)
+	if err != nil {
+		fmt.Printf("Error creating database: %v\n", err)
+		return
+	}
+	
+	fmt.Printf("Database '%s' created successfully with algorithm '%s'\n", name, algorithm)
+}
+
+func handleUseDatabase(args []string) {
+	if len(args) < 1 {
+		fmt.Println("Usage: use-db <name>")
+		fmt.Println("Example: use-db mydb")
+		return
+	}
+	
+	name := args[0]
+	selectedDatabase = name
+	fmt.Printf("Now using database: %s\n", name)
+}
+
+func handleListDatabases() {
+	resp, err := http.Get(serverURL + "/databases")
+	if err != nil {
+		fmt.Printf("Error listing databases: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response: %v\n", err)
+		return
+	}
+	
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Printf("Error parsing response: %v\n", err)
+		return
+	}
+	
+	databases, ok := result["databases"].([]interface{})
+	if !ok {
+		fmt.Println("No databases found")
+		return
+	}
+	
+	fmt.Printf("Available databases (%d):\n", len(databases))
+	for i, db := range databases {
+		dbName := db.(string)
+		fmt.Printf("%d. %s", i+1, dbName)
+		if dbName == selectedDatabase {
+			fmt.Print(" (selected)")
+		}
+		fmt.Println()
+	}
 }
